@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Dashboard - Antigravity Store{% endblock %}
+
+{% block content %}
+
+    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--secondary);">
+        User Dashboard
+    </h1>
+
+    <div class="dashboard-grid">
+        <!-- Sidebar profile card -->
+        <div>
+            <div class="profile-card">
+                <div class="avatar-circle">
+                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--secondary);">
+                    {{ user.first_name }} {{ user.last_name }}
+                </h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">@{{ user.username }}</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 0.75rem;">
+                    <i class="fa-regular fa-envelope"></i> {{ user.email }}<br>
+                    <i class="fa-regular fa-calendar"></i> Member since {{ user.date_joined|date:"M Y" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Past Orders History -->
+        <div>
+            <div class="sidebar-card" style="margin-bottom: 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <h3 class="sidebar-title" style="margin-bottom: 0; border: none; padding: 0;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> My Order History
+                    </h3>
+                    <span class="results-count">{{ orders_count }} Total Order{{ orders_count|pluralize }}</span>
+                </div>
+
+                {% if orders %}
+                    <div class="table-card" style="border: none;">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <td>
+                                            <strong style="color: var(--primary);">{{ order.order_number }}</strong>
+                                        </td>
+                                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                        <td style="font-weight: 800;">${{ order.total_amount }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ order.status }}">{{ order.status }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'order_detail' order.order_number %}" class="btn btn-outline btn-sm">
+                                                Details <i class="fa-solid fa-chevron-right"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 3rem 1rem;">
+                        <i class="fa-solid fa-box-open" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                        <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">No Past Orders Yet</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">When you purchase items, your receipts and order tracking will appear here.</p>
+                        <a href="{% url 'store' %}" class="btn btn-primary btn-sm">Explore Store</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

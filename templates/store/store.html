@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if current_category %}{{ current_category.name }} - Antigravity Store{% else %}Shop All Products - Antigravity Store{% endif %}
+{% endblock %}
+
+{% block content %}
+
+    {% if not current_category and not keyword %}
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+        <div class="hero-content">
+            <span class="hero-tag">Special Offer 2026</span>
+            <h1 class="hero-title">Next-Gen Tech & Premium Lifestyle Gear</h1>
+            <p class="hero-desc">Discover top-tier products curated for performance, aesthetics, and everyday productivity. Enjoy free express shipping on orders over $200!</p>
+            <a href="#catalog" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-cart-shopping"></i> Explore Collection
+            </a>
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="store-container" id="catalog">
+        <!-- Sidebar Filter -->
+        <aside>
+            <div class="sidebar-card">
+                <h3 class="sidebar-title"><i class="fa-solid fa-filter"></i> Categories</h3>
+                <ul class="filter-list">
+                    <li class="filter-item">
+                        <a href="{% url 'store' %}" class="filter-link {% if not current_category %}active{% endif %}">
+                            <span>All Products</span>
+                            <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
+                        </a>
+                    </li>
+                    {% for cat in categories %}
+                        <li class="filter-item">
+                            <a href="{{ cat.get_url }}" class="filter-link {% if current_category.slug == cat.slug %}active{% endif %}">
+                                <span>{{ cat.name }}</span>
+                                <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="sidebar-card" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white;">
+                <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 800;">Free Shipping</h4>
+                <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 1rem;">Get free shipping on all orders over $200. No promo code needed!</p>
+                <span class="btn btn-outline btn-sm" style="color: white; border-color: rgba(255,255,255,0.4); font-size: 0.8rem;">Learn More</span>
+            </div>
+        </aside>
+
+        <!-- Main Product Listing -->
+        <section>
+            <!-- Header bar -->
+            <div class="catalog-header">
+                <div>
+                    <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--secondary);">
+                        {% if keyword %}
+                            Search Results for "{{ keyword }}"
+                        {% elif current_category %}
+                            {{ current_category.name }}
+                        {% else %}
+                            All Featured Products
+                        {% endif %}
+                    </h2>
+                    <span class="results-count">{{ product_count }} product{{ product_count|pluralize }} found</span>
+                </div>
+
+                <!-- Sort options -->
+                <div>
+                    <form method="GET" id="sort-form" style="display: flex; align-items: center; gap: 0.5rem;">
+                        {% if keyword %}<input type="hidden" name="keyword" value="{{ keyword }}">{% endif %}
+                        <label for="sort" style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Sort by:</label>
+                        <select name="sort" id="sort" class="sort-select" onchange="this.form.submit()">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Arrivals</option>
+                            <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Product Name</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Product Cards Grid -->
+            {% if products %}
+                <div class="product-grid">
+                    {% for product in products %}
+                        <div class="product-card">
+                            <a href="{{ product.get_url }}" class="card-img-wrapper">
+                                <img src="{{ product.get_image }}" alt="{{ product.name }}" class="card-img" loading="lazy">
+                                {% if product.featured %}
+                                    <span class="card-badge">Featured</span>
+                                {% endif %}
+                            </a>
+                            <div class="card-body">
+                                <div class="card-category">{{ product.category.name }}</div>
+                                <h3 class="card-title">
+                                    <a href="{{ product.get_url }}" style="color: inherit;">{{ product.name }}</a>
+                                </h3>
+                                <div class="rating-stars">
+                                    <i class="fa-solid fa-star"></i>
+                                    <span style="font-weight: 700;">{{ product.average_rating }}</span>
+                                    <span class="rating-count">({{ product.review_count }})</span>
+                                </div>
+
+                                <div class="card-footer">
+                                    <div class="card-price">${{ product.price }}</div>
+                                    {% if product.stock > 0 %}
+                                        <a href="{% url 'add_cart' product.id %}" class="btn btn-primary btn-sm" title="Add to Cart">
+                                            <i class="fa-solid fa-plus"></i> Add
+                                        </a>
+                                    {% else %}
+                                        <span class="stock-badge stock-out" style="font-size: 0.75rem;">Out of Stock</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 3rem; text-align: center;">
+                    <i class="fa-solid fa-box-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No Products Found</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Try adjusting your search query or category filter.</p>
+                    <a href="{% url 'store' %}" class="btn btn-primary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Store
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+{% endblock %}

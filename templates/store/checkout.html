@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Antigravity Store{% endblock %}
+
+{% block content %}
+
+    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--secondary);">
+        <i class="fa-solid fa-credit-card"></i> Order Checkout
+    </h1>
+
+    <form action="{% url 'place_order' %}" method="POST">
+        {% csrf_token %}
+        <div class="checkout-grid">
+            <!-- Shipping & Billing Details -->
+            <div>
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title"><i class="fa-solid fa-truck-ramp-box"></i> Shipping Information</h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="full_name" class="form-input" value="{{ user.first_name }} {{ user.last_name }}" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="email" class="form-input" value="{{ user.email }}" placeholder="john@example.com" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="text" name="phone" class="form-input" placeholder="+1 (555) 000-1234" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Country *</label>
+                            <input type="text" name="country" class="form-input" value="United States" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Street Address *</label>
+                        <input type="text" name="address" class="form-input" placeholder="123 Innovation Way, Suite 400" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">City / Town *</label>
+                            <input type="text" name="city" class="form-input" placeholder="San Francisco" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ZIP / Postal Code *</label>
+                            <input type="text" name="postal_code" class="form-input" placeholder="94105" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Order Notes (Optional)</label>
+                        <textarea name="order_note" rows="2" class="form-textarea" placeholder="Special delivery instructions or gate code..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title"><i class="fa-solid fa-lock"></i> Payment Method</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--background);">
+                            <input type="radio" name="payment_method" value="Credit Card" checked style="accent-color: var(--primary);">
+                            <i class="fa-solid fa-credit-card" style="font-size: 1.25rem; color: var(--primary);"></i>
+                            <div>
+                                <strong style="display: block;">Credit / Debit Card</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Visa, MasterCard, American Express (Mock Instant Checkout)</span>
+                            </div>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--background);">
+                            <input type="radio" name="payment_method" value="PayPal" style="accent-color: var(--primary);">
+                            <i class="fa-brands fa-paypal" style="font-size: 1.25rem; color: #003087;"></i>
+                            <div>
+                                <strong style="display: block;">PayPal Express</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Pay securely using your PayPal account</span>
+                            </div>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--background);">
+                            <input type="radio" name="payment_method" value="Cash on Delivery" style="accent-color: var(--primary);">
+                            <i class="fa-solid fa-hand-holding-dollar" style="font-size: 1.25rem; color: var(--success);"></i>
+                            <div>
+                                <strong style="display: block;">Cash on Delivery (COD)</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Pay cash when your order arrives</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Preview -->
+            <div>
+                <div class="summary-card">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem; color: var(--secondary);">
+                        Order Items ({{ quantity }})
+                    </h3>
+
+                    <div style="max-height: 250px; overflow-y: auto; margin-bottom: 1rem; padding-right: 0.5rem;">
+                        {% for item in cart_items %}
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <img src="{{ item.product.get_image }}" alt="" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;">
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--secondary);">{{ item.product.name }}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Qty: {{ item.quantity }}</div>
+                                    </div>
+                                </div>
+                                <span style="font-weight: 700;">${{ item.sub_total }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Items Subtotal</span>
+                        <span style="font-weight: 700;">${{ total }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (2%)</span>
+                        <span>${{ tax }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        {% if shipping == 0 %}
+                            <span style="color: var(--success); font-weight: 700;">FREE</span>
+                        {% else %}
+                            <span>${{ shipping }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total Due</span>
+                        <span>${{ grand_total }}</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block btn-lg" style="margin-top: 1.5rem;">
+                        <i class="fa-solid fa-check-circle"></i> Place Order Now
+                    </button>
+                    
+                    <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+                        <i class="fa-solid fa-shield-halved"></i> 256-bit Encrypted Security
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

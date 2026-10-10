@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Details #{{ order.order_number }} - Antigravity Store{% endblock %}
+
+{% block content %}
+
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; max-width: 800px; margin: 0 auto; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--secondary);">Order {{ order.order_number }}</h1>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Placed on {{ order.created_at|date:"F d, Y h:i A" }}</span>
+            </div>
+            <span class="status-badge status-{{ order.status }}" style="font-size: 0.9rem; padding: 0.4rem 1rem;">
+                {{ order.status }}
+            </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="background: var(--background); padding: 1.25rem; border-radius: var(--radius-md);">
+                <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Recipient Info</h4>
+                <strong>{{ order.full_name }}</strong><br>
+                {{ order.email }}<br>
+                {{ order.phone }}
+            </div>
+            <div style="background: var(--background); padding: 1.25rem; border-radius: var(--radius-md);">
+                <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Shipping Address</h4>
+                {{ order.address }}<br>
+                {{ order.city }}, {{ order.postal_code }}<br>
+                {{ order.country }}
+            </div>
+        </div>
+
+        <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--secondary);">Purchased Items</h3>
+        <table class="cart-table" style="margin-bottom: 1.5rem;">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <img src="{{ item.product.get_image }}" alt="" style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover;">
+                                <div>
+                                    <a href="{{ item.product.get_url }}" style="font-weight: 700; color: var(--secondary);">{{ item.product.name }}</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${{ item.price }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td style="font-weight: 800; color: var(--primary);">${{ item.sub_total }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="width: 280px; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.95rem;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <strong>${{ subtotal }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Tax (2%):</span>
+                    <span>${{ order.tax }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Shipping:</span>
+                    <span>{% if order.shipping_cost == 0 %}FREE{% else %}${{ order.shipping_cost }}{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; color: var(--secondary); border-top: 2px dashed var(--border); padding-top: 0.75rem; margin-top: 0.5rem;">
+                    <span>Grand Total:</span>
+                    <span style="color: var(--primary);">${{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

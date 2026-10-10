@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account - Antigravity Store{% endblock %}
+
+{% block content %}
+
+    <div class="form-card">
+        <h1 class="form-title">Join Antigravity</h1>
+        <p class="form-subtitle">Create an account to track orders, save items, and checkout faster.</p>
+
+        <form action="{% url 'register' %}" method="POST">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-input" placeholder="John" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-input" placeholder="Doe" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Username *</label>
+                <input type="text" name="username" class="form-input" placeholder="johndoe" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password *</label>
+                <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password *</label>
+                <input type="password" name="confirm_password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+                <i class="fa-solid fa-user-plus"></i> Create Account
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-muted);">
+            Already have an account? <a href="{% url 'login' %}" style="font-weight: 700;">Log in here</a>
+        </div>
+    </div>
+
+{% endblock %}

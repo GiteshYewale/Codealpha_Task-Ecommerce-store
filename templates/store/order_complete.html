@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} - Antigravity Store{% endblock %}
+
+{% block content %}
+
+    <div style="max-width: 750px; margin: 2rem auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 3rem; box-shadow: var(--shadow-md);">
+        
+        <!-- Header celebration -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="width: 70px; height: 70px; background: #d1fae5; color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; margin: 0 auto 1rem auto;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h1 style="font-size: 2rem; font-weight: 800; color: var(--secondary);">Thank You for Your Order!</h1>
+            <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.25rem;">
+                Your order has been placed and is currently being processed.
+            </p>
+        </div>
+
+        <!-- Receipt Card -->
+        <div style="background: var(--background); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px dashed var(--border);">
+                <div>
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Order Number</span>
+                    <strong style="font-size: 0.95rem; color: var(--primary);">{{ order.order_number }}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Date</span>
+                    <strong style="font-size: 0.95rem;">{{ order.created_at|date:"M d, Y" }}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Payment Method</span>
+                    <strong style="font-size: 0.95rem;">{{ order.payment_method }}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Order Status</span>
+                    <span class="status-badge status-{{ order.status }}">{{ order.status }}</span>
+                </div>
+            </div>
+
+            <!-- Shipping address details -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Shipping Address</h4>
+                <p style="font-size: 0.95rem; line-height: 1.5;">
+                    <strong>{{ order.full_name }}</strong><br>
+                    {{ order.address }}<br>
+                    {{ order.city }}, {{ order.postal_code }}<br>
+                    {{ order.country }}<br>
+                    Phone: {{ order.phone }} | Email: {{ order.email }}
+                </p>
+            </div>
+
+            <!-- Items Table -->
+            <h4 style="font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem;">Itemized Receipt</h4>
+            <table class="cart-table" style="background: white; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                        <tr>
+                            <td style="font-weight: 700;">{{ item.product.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.price }}</td>
+                            <td style="font-weight: 700;">${{ item.sub_total }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Financial Totals -->
+            <div style="margin-top: 1.25rem; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.4rem; border-top: 1px dashed var(--border); padding-top: 1rem;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <strong>${{ subtotal }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Tax (2%):</span>
+                    <span>${{ order.tax }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Shipping:</span>
+                    <span>{% if order.shipping_cost == 0 %}FREE{% else %}${{ order.shipping_cost }}{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; color: var(--secondary); margin-top: 0.5rem;">
+                    <span>Total Paid:</span>
+                    <span style="color: var(--primary);">${{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="{% url 'store' %}" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-store"></i> Continue Shopping
+            </a>
+            <button onclick="window.print()" class="btn btn-outline btn-lg">
+                <i class="fa-solid fa-print"></i> Print Receipt
+            </button>
+        </div>
+    </div>
+
+{% endblock %}

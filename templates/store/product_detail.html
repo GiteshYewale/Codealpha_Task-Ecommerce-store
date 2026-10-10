@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Antigravity Store{% endblock %}
+
+{% block content %}
+
+    <!-- Breadcrumb -->
+    <nav style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">
+        <a href="{% url 'store' %}">Home</a> &nbsp;/&nbsp; 
+        <a href="{{ product.category.get_url }}">{{ product.category.name }}</a> &nbsp;/&nbsp; 
+        <span style="color: var(--text);">{{ product.name }}</span>
+    </nav>
+
+    <!-- Product Detail Header Grid -->
+    <div class="detail-grid">
+        <!-- Gallery image -->
+        <div class="detail-img-container">
+            <img src="{{ product.get_image }}" alt="{{ product.name }}" class="detail-img" id="main-product-img">
+        </div>
+
+        <!-- Product Specs & Buying Actions -->
+        <div class="detail-info">
+            <span class="card-category">{{ product.category.name }}</span>
+            <h1 class="detail-title">{{ product.name }}</h1>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="rating-stars" style="font-size: 1rem;">
+                    <i class="fa-solid fa-star"></i>
+                    <span style="font-weight: 800;">{{ product.average_rating }}</span>
+                    <span class="rating-count">({{ product.review_count }} verified review{{ product.review_count|pluralize }})</span>
+                </div>
+                {% if product.stock > 0 %}
+                    <span class="stock-badge stock-in"><i class="fa-solid fa-check"></i> In Stock ({{ product.stock }})</span>
+                {% else %}
+                    <span class="stock-badge stock-out"><i class="fa-solid fa-xmark"></i> Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-price">${{ product.price }}</div>
+
+            <p class="detail-desc">{{ product.description }}</p>
+
+            <form action="{% url 'add_cart' product.id %}" method="POST" style="margin-top: auto;">
+                {% csrf_token %}
+                <div class="qty-selector">
+                    <label for="quantity" style="font-weight: 700; font-size: 0.95rem;">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock|default:10 }}" class="qty-input">
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    {% if product.stock > 0 %}
+                        <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+                            <i class="fa-solid fa-cart-shopping"></i> Add to Cart
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-outline btn-lg" disabled style="flex: 1; cursor: not-allowed;">
+                            Currently Out of Stock
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'cart' %}" class="btn btn-outline btn-lg" title="View Cart">
+                        <i class="fa-solid fa-bag-shopping"></i> View Cart
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+        <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--secondary);">
+            Customer Reviews & Ratings
+        </h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+            <!-- Submit Review Form -->
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Write a Review</h3>
+                {% if user.is_authenticated %}
+                    <form action="{% url 'submit_review' product.id %}" method="POST" style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label">Overall Rating</label>
+                            <select name="rating" class="form-select" required>
+                                <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                                <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+                                <option value="3">⭐⭐⭐ (3 - Average)</option>
+                                <option value="2">⭐⭐ (2 - Poor)</option>
+                                <option value="1">⭐ (1 - Terrible)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Review Title</label>
+                            <input type="text" name="subject" class="form-input" placeholder="Summarize your experience..." required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Detailed Review</label>
+                            <textarea name="review" rows="4" class="form-textarea" placeholder="What did you like or dislike about this product?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            Submit Review
+                        </button>
+                    </form>
+                {% else %}
+                    <div style="background: var(--primary-light); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; border: 1px dashed var(--primary);">
+                        <p style="font-weight: 600; color: var(--primary); margin-bottom: 1rem;">Please log in to write a product review.</p>
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-right-to-bracket"></i> Login to Review
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- List of existing reviews -->
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Recent Customer Feedback</h3>
+                {% if reviews %}
+                    {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <span class="reviewer-name">{{ review.user.first_name|default:review.user.username }}</span>
+                                <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="rating-stars" style="margin-bottom: 0.3rem;">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star" style="color: var(--border);"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if review.subject %}
+                                <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">{{ review.subject }}</div>
+                            {% endif %}
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">{{ review.comment }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--text-muted); font-style: italic;">No reviews yet for this product. Be the first to share your thoughts!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div style="margin-top: 3rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--secondary);">
+            You Might Also Like
+        </h2>
+        <div class="product-grid">
+            {% for r_product in related_products %}
+                <div class="product-card">
+                    <a href="{{ r_product.get_url }}" class="card-img-wrapper">
+                        <img src="{{ r_product.get_image }}" alt="{{ r_product.name }}" class="card-img" loading="lazy">
+                    </a>
+                    <div class="card-body">
+                        <div class="card-category">{{ r_product.category.name }}</div>
+                        <h3 class="card-title">
+                            <a href="{{ r_product.get_url }}" style="color: inherit;">{{ r_product.name }}</a>
+                        </h3>
+                        <div class="card-footer">
+                            <div class="card-price">${{ r_product.price }}</div>
+                            <a href="{{ r_product.get_url }}" class="btn btn-outline btn-sm">View</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+{% endblock %}
